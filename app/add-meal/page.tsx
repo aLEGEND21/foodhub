@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Meal, Food } from "@/lib/types";
+import type { Food } from "@/lib/types";
 import { getFoods, type GetFoodsResult } from "@/lib/actions/meals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,20 +46,8 @@ export default function AddPage() {
   }, [search, foods]);
 
   const handleFoodSelected = (food: Food) => {
-    const now = new Date();
-    // Convert selected food into a meal (consumption record)
-    const newMeal: Meal = {
-      id: `meal-${Date.now()}`,
-      name: food.name,
-      emoji: food.emoji,
-      calories: food.calories,
-      protein: food.protein,
-      timestamp: now,
-      date: now.toISOString().split("T")[0],
-      mealType: "snack", // Default, would need to be set properly in real app
-    };
-    // Add to today's meals (would need parent state or server action in real app)
-    console.log("[v0] Food selected, creating meal:", newMeal);
+    // Navigate to selection page where user can choose meal type and serving size
+    router.push(`/add-meal/select/${food.id}`);
   };
 
   return (
