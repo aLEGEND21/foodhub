@@ -18,14 +18,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className}`}>
-        <div className="flex flex-col min-h-screen pb-20 md:justify-center md:items-center md:min-h-screen md:bg-muted/30 md:p-4">
+        <div className="flex flex-col h-screen md:justify-center md:items-center md:h-auto md:bg-muted/30 md:p-4">
           <div
-            className="w-full md:w-[390px] md:border md:border-border md:rounded-[2.5rem] md:overflow-hidden md:bg-background md:shadow-2xl md:relative md:flex md:flex-col md:max-h-[90vh]"
+            className="w-full h-full flex flex-col md:h-auto md:w-[390px] md:border md:border-border md:rounded-[2.5rem] md:overflow-hidden md:bg-background md:shadow-2xl md:relative md:max-h-[90vh]"
             style={{
               aspectRatio: "390 / 844",
             }}
           >
-            <div className="flex flex-col min-h-screen pb-20 md:min-h-0 md:flex-1 md:flex md:flex-col md:overflow-y-auto md:scrollbar-hide md:pb-0">
+            <div className="flex flex-col min-h-0 flex-1 overflow-y-auto pb-20 md:pb-0 md:scrollbar-hide">
               {children}
             </div>
             <BottomNav />

@@ -1,80 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState } from "react";
+import Form from "next/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { createFood } from "@/lib/actions/meals";
 
 export default function NewMealPage() {
-  const router = useRouter();
-  const [mealName, setMealName] = useState("");
-  const [calories, setCalories] = useState("");
-  const [protein, setProtein] = useState("");
-  const [emoji, setEmoji] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate inputs
-    if (!mealName.trim()) {
-      alert("Please enter a meal name");
-      return;
-    }
-
-    if (!calories || isNaN(Number(calories)) || Number(calories) <= 0) {
-      alert("Please enter a valid number of calories");
-      return;
-    }
-
-    if (protein && (isNaN(Number(protein)) || Number(protein) < 0)) {
-      alert("Please enter a valid number of protein (0 or greater)");
-      return;
-    }
-
-    if (!emoji.trim()) {
-      alert("Please enter an emoji");
-      return;
-    }
-
-    // Create meal object
-    const newMeal = {
-      name: mealName.trim(),
-      calories: Number(calories),
-      protein: protein ? Number(protein) : 0,
-      emoji: emoji.trim(),
-    };
-
-    // Log the meal (in a real app, this would save to database)
-    console.log("[v0] New meal created:", newMeal);
-
-    // Navigate back to add-meal page
-    router.push("/add-meal");
-  };
+  const [state, formAction, isPending] = useActionState(createFood, null);
 
   return (
     <main className="max-w-md mx-auto w-full px-4 pt-6 space-y-4 pb-20 md:pb-4">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Create Custom Meal</h1>
-        <p className="text-muted-foreground">Add a new meal to your library</p>
+        <h1 className="text-3xl font-bold">Create Custom Food</h1>
+        <p className="text-muted-foreground">
+          Add a new food option to your library
+        </p>
       </div>
 
       {/* Form */}
       <Card className="border-0 shadow-none">
         <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Meal Name Input */}
+          {state && (
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              {state.message}
+            </div>
+          )}
+          <Form action={formAction} className="space-y-4">
+            {/* Food Name Input */}
             <div className="space-y-2">
-              <label htmlFor="meal-name" className="text-sm font-medium">
-                Meal Name
+              <label htmlFor="food-name" className="text-sm font-medium">
+                Food Name
               </label>
               <Input
-                id="meal-name"
+                id="food-name"
+                name="name"
                 type="text"
                 placeholder="e.g., Grilled Salmon"
-                value={mealName}
-                onChange={(e) => setMealName(e.target.value)}
                 className="rounded-lg"
                 required
               />
@@ -87,10 +51,9 @@ export default function NewMealPage() {
               </label>
               <Input
                 id="calories"
+                name="calories"
                 type="number"
                 placeholder="e.g., 350"
-                value={calories}
-                onChange={(e) => setCalories(e.target.value)}
                 className="rounded-lg"
                 min="1"
                 required
@@ -104,12 +67,12 @@ export default function NewMealPage() {
               </label>
               <Input
                 id="protein"
+                name="protein"
                 type="number"
                 placeholder="e.g., 25"
-                value={protein}
-                onChange={(e) => setProtein(e.target.value)}
                 className="rounded-lg"
                 min="0"
+                required
               />
             </div>
 
@@ -120,10 +83,9 @@ export default function NewMealPage() {
               </label>
               <Input
                 id="emoji"
+                name="emoji"
                 type="text"
                 placeholder="e.g., 🐟"
-                value={emoji}
-                onChange={(e) => setEmoji(e.target.value)}
                 className="rounded-lg text-2xl"
                 maxLength={2}
                 required
@@ -135,16 +97,17 @@ export default function NewMealPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.back()}
+                onClick={() => window.history.back()}
                 className="flex-1"
+                disabled={isPending}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1">
-                Create Meal
+              <Button type="submit" className="flex-1" disabled={isPending}>
+                {isPending ? "Creating..." : "Create Food"}
               </Button>
             </div>
-          </form>
+          </Form>
         </CardContent>
       </Card>
     </main>
