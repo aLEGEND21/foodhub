@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Meal, DailyStats } from "@/lib/types";
+import type { Meal, DailyStats } from "@/types";
 import { mockAllMeals } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,10 +77,10 @@ export default function HomePage() {
   };
 
   const mealsByType = {
-    breakfast: allMeals.filter((m) => m.mealType === "breakfast"),
-    lunch: allMeals.filter((m) => m.mealType === "lunch"),
-    dinner: allMeals.filter((m) => m.mealType === "dinner"),
-    snack: allMeals.filter((m) => m.mealType === "snack"),
+    breakfast: allMeals.filter((m) => m.mealTime === "breakfast"),
+    lunch: allMeals.filter((m) => m.mealTime === "lunch"),
+    dinner: allMeals.filter((m) => m.mealTime === "dinner"),
+    snack: allMeals.filter((m) => m.mealTime === "snack"),
   };
 
   const calorieGoal = 2000;
@@ -248,16 +248,11 @@ export default function HomePage() {
                             }`}
                           >
                             <div className="flex items-center gap-3 flex-1">
-                              <span className="text-xl">{meal.emoji}</span>
+                              <span className="text-xl">{meal.icon}</span>
                               <div className="flex-1">
                                 <p className="font-medium text-sm leading-tight">
                                   {meal.name}
                                 </p>
-                                {meal.note && (
-                                  <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
-                                    {meal.note}
-                                  </p>
-                                )}
                               </div>
                             </div>
                             <div className="flex items-center gap-4">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getFoodById, createMeal } from "@/lib/actions/meals";
-import type { Food } from "@/lib/types";
+import type { Food } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -63,10 +63,14 @@ export default function SelectMealPage() {
     setError(null);
 
     try {
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split("T")[0];
+
       const result = await createMeal({
         foodId,
         mealTime: selectedMealTime,
         servingSize: selectedServingSize,
+        date: today,
       });
 
       // If we get here, there was an error (success redirects server-side)
@@ -140,7 +144,7 @@ export default function SelectMealPage() {
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <span className="text-4xl">{food.emoji}</span>
+          <span className="text-4xl">{food.icon}</span>
           <div>
             <h1 className="text-2xl font-bold">{food.name}</h1>
             <p className="text-sm text-muted-foreground">

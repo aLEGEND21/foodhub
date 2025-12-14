@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Food } from "@/lib/types";
+import type { Food } from "@/types";
 import { getFoods, type GetFoodsResult } from "@/lib/actions/meals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,7 +91,7 @@ export default function AddPage() {
                   variant="outline"
                   className="flex flex-col items-center justify-center h-24 gap-2 bg-accent/10 hover:bg-accent/20 border-accent/30"
                 >
-                  <span className="text-3xl">{food.emoji}</span>
+                  <span className="text-3xl">{food.icon}</span>
                   <span className="text-xs text-center leading-tight">
                     {food.name}
                   </span>
@@ -127,7 +127,7 @@ export default function AddPage() {
                   variant="outline"
                   className="flex flex-col items-center justify-center h-20 gap-1 text-center"
                 >
-                  <span className="text-2xl">{food.emoji}</span>
+                  <span className="text-2xl">{food.icon}</span>
                   <span className="text-xs leading-tight">{food.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {food.calories} cal

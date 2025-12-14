@@ -6,7 +6,7 @@ import dbConnect from "@/lib/mongodb";
 import Food from "@/models/Food";
 import Meal from "@/models/Meal";
 import { revalidatePath } from "next/cache";
-import type { Food as FoodType } from "@/lib/types";
+import type { Food as FoodType } from "@/types";
 
 // Zod schema for food validation
 const createFoodSchema = z.object({
@@ -117,7 +117,7 @@ export async function getFoods(): Promise<GetFoodsResult> {
     const formattedFavoriteFoods: FoodType[] = favoriteFoods.map((food) => ({
       id: food._id.toString(),
       name: food.name,
-      emoji: food.icon,
+      icon: food.icon,
       calories: food.calories,
       protein: food.protein,
       favorite: true,
@@ -125,7 +125,7 @@ export async function getFoods(): Promise<GetFoodsResult> {
     const formattedRegularFoods: FoodType[] = regularFoods.map((food) => ({
       id: food._id.toString(),
       name: food.name,
-      emoji: food.icon,
+      icon: food.icon,
       calories: food.calories,
       protein: food.protein,
       favorite: false,
@@ -150,6 +150,7 @@ const createMealSchema = z.object({
   servingSize: z.enum(["1/4", "1/3", "1/2", "2/3", "3/4", "1"], {
     message: "Invalid serving size",
   }),
+  date: z.string().min(1, "Date is required"),
 });
 
 export type CreateMealInput = z.infer<typeof createMealSchema>;
@@ -215,6 +216,7 @@ export async function createMeal(
       servingSize: validatedInput.servingSize,
       mealTime: validatedInput.mealTime,
       foodId: validatedInput.foodId,
+      date: new Date(validatedInput.date),
     });
 
     // Revalidate relevant paths
@@ -245,7 +247,7 @@ export async function getFoodById(foodId: string): Promise<FoodType | null> {
     return {
       id: food._id.toString(),
       name: food.name,
-      emoji: food.icon,
+      icon: food.icon,
       calories: food.calories,
       protein: food.protein,
       favorite: food.favorite || false,

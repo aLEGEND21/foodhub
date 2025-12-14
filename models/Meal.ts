@@ -16,6 +16,10 @@ const MealSchema = new mongoose.Schema({
     ref: "Food",
     required: true,
   },
+  date: {
+    type: Date,
+    required: true,
+  },
 });
 
 export default mongoose.models.Meal || mongoose.model("Meal", MealSchema);
