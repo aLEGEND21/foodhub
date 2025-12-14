@@ -4,9 +4,9 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import dbConnect from "@/lib/mongodb";
 import Food from "@/models/Food";
-import Meal from "@/models/Meal";
+import MealModel from "@/models/Meal";
 import { revalidatePath } from "next/cache";
-import type { Food as FoodType } from "@/types";
+import type { Food as FoodType, Meal, DailyStats } from "@/types";
 
 // Zod schema for food validation
 const createFoodSchema = z.object({
@@ -207,8 +207,13 @@ export async function createMeal(
     const adjustedCalories = Math.round(food.calories * multiplier);
     const adjustedProtein = Math.round(food.protein * multiplier);
 
+    // Parse date string (YYYY-MM-DD) and create Date object at start of day in UTC
+    // This ensures consistent date storage regardless of server timezone
+    const [year, month, day] = validatedInput.date.split("-").map(Number);
+    const mealDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+
     // Create new meal
-    await Meal.create({
+    await MealModel.create({
       name: food.name,
       calories: adjustedCalories,
       protein: adjustedProtein,
@@ -216,7 +221,7 @@ export async function createMeal(
       servingSize: validatedInput.servingSize,
       mealTime: validatedInput.mealTime,
       foodId: validatedInput.foodId,
-      date: new Date(validatedInput.date),
+      date: mealDate,
     });
 
     // Revalidate relevant paths
@@ -255,5 +260,82 @@ export async function getFoodById(foodId: string): Promise<FoodType | null> {
   } catch (error) {
     console.error("Error fetching food:", error);
     return null;
+  }
+}
+
+export async function getTodayMeals(): Promise<DailyStats> {
+  try {
+    await dbConnect();
+
+    // Get today's date range (start and end of day) in UTC
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+
+    // Fetch all meals for today
+    const meals = await MealModel.find({
+      date: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    }).sort({ mealTime: 1, name: 1 });
+
+    // Convert MongoDB documents to Meal type format
+    const formattedMeals: Meal[] = meals.map((meal) => ({
+      id: meal._id.toString(),
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      icon: meal.icon,
+      servingSize: meal.servingSize as Meal["servingSize"],
+      mealTime: meal.mealTime as Meal["mealTime"],
+      foodId: meal.foodId.toString(),
+      date: meal.date,
+    }));
+
+    // Calculate totals
+    const totalCalories = formattedMeals.reduce(
+      (sum, meal) => sum + meal.calories,
+      0
+    );
+    const totalProtein = formattedMeals.reduce(
+      (sum, meal) => sum + meal.protein,
+      0
+    );
+
+    return {
+      date: today.toISOString().split("T")[0],
+      totalCalories,
+      totalProtein,
+      meals: formattedMeals,
+    };
+  } catch (error) {
+    console.error("Error fetching today's meals:", error);
+    // Return empty stats on error
+    const today = new Date().toISOString().split("T")[0];
+    return {
+      date: today,
+      totalCalories: 0,
+      totalProtein: 0,
+      meals: [],
+    };
+  }
+}
+
+export async function deleteMeal(
+  mealId: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    await dbConnect();
+    await MealModel.findByIdAndDelete(mealId);
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting meal:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to delete meal",
+    };
   }
 }

@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react";
 import type { Meal, DailyStats } from "@/types";
-import { mockAllMeals } from "@/lib/mock-data";
+import { getTodayMeals, deleteMeal } from "@/lib/actions/meals";
+import { CALORIE_GOAL, PROTEIN_GOAL } from "@/lib/constants";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Zap, Apple, Trash2 } from "lucide-react";
+import { ChevronRight, Zap, Apple, Trash2 } from "lucide-react";
 
 export default function HomePage() {
   const [todayStats, setTodayStats] = useState<DailyStats | null>(null);
@@ -17,19 +23,22 @@ export default function HomePage() {
   const [fruitsCount, setFruitsCount] = useState(0);
 
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const today_stats = mockAllMeals.find((s) => s.date === today) || {
-      date: today,
-      totalCalories: 0,
-      totalProtein: 0,
-      meals: [],
+    const fetchTodayMeals = async () => {
+      const todayStats = await getTodayMeals();
+      setTodayStats(todayStats);
+      setAllMeals(todayStats.meals);
     };
-    setTodayStats(today_stats);
-    setAllMeals(today_stats.meals);
+    fetchTodayMeals();
   }, []);
 
-  const handleDeleteMeal = (id: string) => {
-    setAllMeals(allMeals.filter((m) => m.id !== id));
+  const handleDeleteMeal = async (id: string) => {
+    const result = await deleteMeal(id);
+    if (result.success) {
+      // Refresh meals from backend
+      const todayStats = await getTodayMeals();
+      setTodayStats(todayStats);
+      setAllMeals(todayStats.meals);
+    }
   };
 
   const toggleMealType = (type: string) => {
@@ -83,8 +92,9 @@ export default function HomePage() {
     snack: allMeals.filter((m) => m.mealTime === "snack"),
   };
 
-  const calorieGoal = 2000;
-  const proteinGoal = 150;
+  // Use goals from constants
+  const calorieGoal = CALORIE_GOAL;
+  const proteinGoal = PROTEIN_GOAL;
   const caloriePercent = todayStats
     ? Math.min((todayStats.totalCalories / calorieGoal) * 100, 100)
     : 0;
@@ -110,7 +120,7 @@ export default function HomePage() {
         {/* Stats Summary */}
         {todayStats && (
           <div className="grid grid-cols-2 gap-3">
-            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <Card className="bg-linear-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardContent className="pt-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-primary">
@@ -131,7 +141,7 @@ export default function HomePage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
+            <Card className="bg-linear-to-br from-accent/10 to-accent/5 border-accent/20">
               <CardContent className="pt-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-accent">
@@ -180,112 +190,135 @@ export default function HomePage() {
         </div>
 
         {/* Today's Meals Grouped by Type */}
-        {allMeals.length === 0 ? (
-          <Card className="bg-muted/30">
-            <CardContent className="pt-6 pb-6 text-center">
-              <p className="text-muted-foreground">No meals logged yet</p>
-              <Button variant="outline" className="mt-3 bg-transparent" asChild>
-                <a href="/add-meal">Add your first meal</a>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {(["breakfast", "lunch", "dinner", "snack"] as const).map(
-              (type) => {
-                const meals = mealsByType[type];
-                if (meals.length === 0) return null;
+        <div className="space-y-3">
+          {(["breakfast", "lunch", "dinner", "snack"] as const).map((type) => {
+            const meals = mealsByType[type];
+            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            const isExpanded = expandedMeals.has(type);
+            const sortedMeals = [...meals].sort((a, b) =>
+              a.name.localeCompare(b.name)
+            );
 
-                const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-                const isExpanded = expandedMeals.has(type);
-                const sortedMeals = [...meals].sort((a, b) =>
-                  a.name.localeCompare(b.name)
-                );
+            const typeCalories = meals.reduce(
+              (sum, meal) => sum + meal.calories,
+              0
+            );
+            const typeProtein = meals.reduce(
+              (sum, meal) => sum + meal.protein,
+              0
+            );
+            const itemCount = meals.length;
 
-                const typeCalories = meals.reduce(
-                  (sum, meal) => sum + meal.calories,
-                  0
-                );
-
-                return (
-                  <Card
-                    key={type}
-                    className="overflow-hidden shadow-sm hover:shadow-md transition-shadow border-border/50"
-                  >
-                    <button
-                      onClick={() => toggleMealType(type)}
-                      className="w-full px-5 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="text-base font-semibold">
-                          {typeLabel}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
+            return (
+              <Collapsible
+                key={type}
+                open={isExpanded}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setExpandedMeals((prev) => new Set(prev).add(type));
+                  } else {
+                    setExpandedMeals((prev) => {
+                      const newSet = new Set(prev);
+                      newSet.delete(type);
+                      return newSet;
+                    });
+                  }
+                }}
+              >
+                <Card className="overflow-hidden shadow-sm border-border/50">
+                  <CollapsibleTrigger className="w-full px-5 flex items-start justify-between">
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-base font-semibold">
+                        {typeLabel}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {itemCount} {itemCount === 1 ? "item" : "items"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="flex items-baseline gap-1">
                           <p className="text-sm font-bold text-primary">
                             {typeCalories}
                           </p>
                           <p className="text-xs text-muted-foreground">cal</p>
                         </div>
-                        <ChevronDown
-                          className={`w-5 h-5 text-muted-foreground transition-transform ${
-                            isExpanded ? "rotate-180" : ""
-                          }`}
-                        />
+                        <div className="flex items-baseline gap-1 mt-0.5">
+                          <p className="text-sm font-bold text-primary">
+                            {typeProtein}
+                          </p>
+                          <p className="text-xs text-muted-foreground">g</p>
+                        </div>
                       </div>
-                    </button>
-                    {isExpanded && (
-                      <div className="border-t border-border/50 bg-muted/20">
-                        {sortedMeals.map((meal, index) => (
-                          <div
-                            key={meal.id}
-                            className={`flex items-center justify-between px-5 py-3 hover:bg-muted/40 transition-colors group ${
-                              index !== sortedMeals.length - 1
-                                ? "border-b border-border/30"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 flex-1">
-                              <span className="text-xl">{meal.icon}</span>
-                              <div className="flex-1">
-                                <p className="font-medium text-sm leading-tight">
-                                  {meal.name}
-                                </p>
+                      <ChevronRight
+                        className={`w-5 h-5 text-muted-foreground transition-transform ${
+                          isExpanded ? "rotate-90" : ""
+                        }`}
+                      />
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="border-t border-border/50 bg-muted/20">
+                      {sortedMeals.length === 0 ? (
+                        <div className="px-5 py-3 text-center">
+                          <p className="text-sm text-muted-foreground">
+                            No meals logged for {typeLabel.toLowerCase()}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="py-3">
+                          {sortedMeals.map((meal, index) => (
+                            <div
+                              key={meal.id}
+                              className={`flex items-center justify-between px-5 py-2 group ${
+                                index !== sortedMeals.length - 1
+                                  ? "border-b border-border/30"
+                                  : ""
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 flex-1">
+                                <span className="text-base">{meal.icon}</span>
+                                <div className="flex-1">
+                                  <p className="font-medium text-xs leading-tight">
+                                    {meal.name}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="text-right flex items-center gap-3">
+                                  <p className="text-[10px] text-muted-foreground">
+                                    {meal.servingSize} serving
+                                  </p>
+                                  <p className="text-xs font-semibold">
+                                    {meal.calories} cal
+                                  </p>
+                                  <p className="text-xs font-semibold">
+                                    {meal.protein} g
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteMeal(meal.id);
+                                  }}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Trash2 className="w-4 h-4 text-destructive" />
+                                </Button>
                               </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <p className="text-sm font-semibold">
-                                  {meal.calories}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {meal.protein}g
-                                </p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteMeal(meal.id);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
-                              >
-                                <Trash2 className="w-4 h-4 text-destructive" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </Card>
-                );
-              }
-            )}
-          </div>
-        )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
+            );
+          })}
+        </div>
       </main>
     </>
   );
