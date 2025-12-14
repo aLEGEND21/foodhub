@@ -339,3 +339,65 @@ export async function deleteMeal(
     };
   }
 }
+
+export async function getHistoryMeals(): Promise<DailyStats[]> {
+  try {
+    await dbConnect();
+
+    // Fetch all meals, sorted by date (newest first)
+    const meals = await MealModel.find({}).sort({
+      date: -1,
+      mealTime: 1,
+      name: 1,
+    });
+
+    // Group meals by date
+    const mealsByDate = new Map<string, Meal[]>();
+
+    meals.forEach((meal) => {
+      // Convert date to YYYY-MM-DD format for grouping
+      const dateStr = meal.date.toISOString().split("T")[0];
+
+      if (!mealsByDate.has(dateStr)) {
+        mealsByDate.set(dateStr, []);
+      }
+
+      const formattedMeal: Meal = {
+        id: meal._id.toString(),
+        name: meal.name,
+        calories: meal.calories,
+        protein: meal.protein,
+        icon: meal.icon,
+        servingSize: meal.servingSize as Meal["servingSize"],
+        mealTime: meal.mealTime as Meal["mealTime"],
+        foodId: meal.foodId.toString(),
+        date: meal.date,
+      };
+
+      mealsByDate.get(dateStr)!.push(formattedMeal);
+    });
+
+    // Convert to DailyStats array
+    const historyStats: DailyStats[] = Array.from(mealsByDate.entries())
+      .map(([date, meals]) => {
+        const totalCalories = meals.reduce(
+          (sum, meal) => sum + meal.calories,
+          0
+        );
+        const totalProtein = meals.reduce((sum, meal) => sum + meal.protein, 0);
+
+        return {
+          date,
+          totalCalories,
+          totalProtein,
+          meals,
+        };
+      })
+      .sort((a, b) => b.date.localeCompare(a.date)); // Sort by date, newest first
+
+    return historyStats;
+  } catch (error) {
+    console.error("Error fetching history meals:", error);
+    return [];
+  }
+}
