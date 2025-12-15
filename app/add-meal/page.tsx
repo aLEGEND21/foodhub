@@ -6,6 +6,8 @@ import type { Food } from "@/types";
 import { getFoods, type GetFoodsResult } from "@/lib/actions/meals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Star } from "lucide-react";
 
 export default function AddPage() {
   const router = useRouter();
@@ -50,6 +52,11 @@ export default function AddPage() {
     router.push(`/add-meal/select/${food.id}`);
   };
 
+  const handleFavoriteClick = (e: React.MouseEvent, food: Food) => {
+    e.stopPropagation();
+    // Empty callback handler for now
+  };
+
   return (
     <>
       <main className="max-w-md mx-auto w-full px-4 pt-6 space-y-4 pb-20 md:pb-4">
@@ -85,17 +92,48 @@ export default function AddPage() {
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {foods.favoriteFoods.map((food) => (
-                <Button
+                <Card
                   key={food.id}
                   onClick={() => handleFoodSelected(food)}
-                  variant="outline"
-                  className="flex flex-col items-center justify-center h-24 gap-2 bg-accent/10 hover:bg-accent/20 border-accent/30"
+                  className="relative cursor-pointer hover:bg-accent/5 transition-colors border-accent/30 bg-accent/10"
                 >
-                  <span className="text-3xl">{food.icon}</span>
-                  <span className="text-xs text-center leading-tight">
-                    {food.name}
-                  </span>
-                </Button>
+                  <CardContent className="px-3 py-1 flex flex-col items-center gap-2">
+                    <button
+                      onClick={(e) => handleFavoriteClick(e, food)}
+                      className="absolute top-2 right-2 p-1 hover:opacity-80 transition-opacity z-10"
+                    >
+                      <Star
+                        className={`w-4 h-4 ${
+                          food.favorite
+                            ? "fill-orange-500 text-orange-500"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                    <h3 className="text-sm font-medium text-center mt-1">
+                      {food.name}
+                    </h3>
+                    <span className="text-3xl">{food.icon}</span>
+                    <div className="flex items-center gap-2 w-full justify-center mt-auto pt-1">
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs font-bold">
+                          {food.calories}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          cal
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs font-bold">
+                          {food.protein}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          grams
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -121,18 +159,48 @@ export default function AddPage() {
                 ? filteredFoods.favoriteFoods
                 : filteredFoods.regularFoods
               ).map((food: Food) => (
-                <Button
+                <Card
                   key={food.id}
                   onClick={() => handleFoodSelected(food)}
-                  variant="outline"
-                  className="flex flex-col items-center justify-center h-20 gap-1 text-center"
+                  className="relative cursor-pointer hover:bg-accent/5 transition-colors"
                 >
-                  <span className="text-2xl">{food.icon}</span>
-                  <span className="text-xs leading-tight">{food.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {food.calories} cal
-                  </span>
-                </Button>
+                  <CardContent className="px-4 py-1 flex flex-col items-center gap-3">
+                    <button
+                      onClick={(e) => handleFavoriteClick(e, food)}
+                      className="absolute top-2 right-2 p-1 hover:opacity-80 transition-opacity z-10"
+                    >
+                      <Star
+                        className={`w-4 h-4 ${
+                          food.favorite
+                            ? "fill-orange-500 text-orange-500"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                    </button>
+                    <h3 className="text-base font-medium text-center mt-1">
+                      {food.name}
+                    </h3>
+                    <span className="text-4xl">{food.icon}</span>
+                    <div className="flex items-center gap-4 w-full justify-center mt-auto pt-2">
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm font-bold">
+                          {food.calories}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          cal
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="text-sm font-bold">
+                          {food.protein}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          grams
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
