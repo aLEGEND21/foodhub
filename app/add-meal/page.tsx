@@ -85,13 +85,13 @@ export default function AddPage() {
         )}
 
         {/* Favorite Foods */}
-        {!loading && foods.favoriteFoods.length > 0 && (
+        {!loading && filteredFoods.favoriteFoods.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground">
               Favorites
             </h3>
             <div className="grid grid-cols-3 gap-2">
-              {foods.favoriteFoods.map((food) => (
+              {filteredFoods.favoriteFoods.map((food) => (
                 <Card
                   key={food.id}
                   onClick={() => handleFoodSelected(food)}
@@ -141,24 +141,23 @@ export default function AddPage() {
 
         {/* No Foods Message */}
         {!loading &&
-          foods.favoriteFoods.length === 0 &&
-          foods.regularFoods.length === 0 && (
+          filteredFoods.favoriteFoods.length === 0 &&
+          filteredFoods.regularFoods.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
-              No foods found. Create your first food!
+              {search
+                ? "No foods found matching your search."
+                : "No foods found. Create your first food!"}
             </div>
           )}
 
         {/* All Foods - Alphabetically Organized */}
-        {!loading && foods.regularFoods.length > 0 && (
+        {!loading && filteredFoods.regularFoods.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground">
               All Foods
             </h3>
             <div className="grid grid-cols-2 gap-2 auto-rows-max">
-              {(search
-                ? filteredFoods.favoriteFoods
-                : filteredFoods.regularFoods
-              ).map((food: Food) => (
+              {filteredFoods.regularFoods.map((food: Food) => (
                 <Card
                   key={food.id}
                   onClick={() => handleFoodSelected(food)}
