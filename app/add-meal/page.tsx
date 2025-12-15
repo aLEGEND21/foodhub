@@ -153,10 +153,10 @@ export default function AddPage() {
                   onClick={() => handleFoodSelected(food)}
                   className="hover:bg-accent/5 relative cursor-pointer transition-colors"
                 >
-                  <CardContent className="flex flex-col items-center gap-3 px-4 py-1">
+                  <CardContent className="flex flex-col items-center gap-4 px-4 py-3">
                     <button
                       onClick={(e) => handleFavoriteClick(e, food)}
-                      className="absolute top-2 right-2 z-10 p-1 transition-opacity hover:opacity-80"
+                      className="absolute top-1.5 right-1.5 z-10 p-1 transition-opacity hover:opacity-80"
                     >
                       <Star
                         className={`h-5 w-5 ${
@@ -219,10 +219,10 @@ export default function AddPage() {
                   onClick={() => handleFoodSelected(food)}
                   className="hover:bg-accent/5 relative cursor-pointer transition-colors"
                 >
-                  <CardContent className="flex flex-col items-center gap-3 px-4 py-1">
+                  <CardContent className="flex flex-col items-center gap-4 px-4 py-3">
                     <button
                       onClick={(e) => handleFavoriteClick(e, food)}
-                      className="absolute top-2 right-2 z-10 p-1 transition-opacity hover:opacity-80"
+                      className="absolute top-1.5 right-1.5 z-10 p-1 transition-opacity hover:opacity-80"
                     >
                       <Star
                         className={`h-5 w-5 ${
