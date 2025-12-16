@@ -11,7 +11,7 @@ export function BottomNav() {
     { href: "/", label: "Home", icon: Home },
     { href: "/add-meal", label: "Add", icon: Plus },
     { href: "/history", label: "History", icon: Flame },
-    { href: "/summary", label: "Trends", icon: TrendingUp },
+    { href: "/trends", label: "Trends", icon: TrendingUp },
   ];
 
   return (
