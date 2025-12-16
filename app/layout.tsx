@@ -3,6 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
 import { ThemeProvider } from "next-themes";
+import { MobileMockupWrapper } from "@/components/mobile-mockup-wrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,25 +26,29 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <div className="md:bg-muted/30 dark:md:bg-background flex h-screen flex-col md:h-auto md:items-center md:justify-center md:p-4">
+          <MobileMockupWrapper>
             <div
-              className="md:border-border flex h-full w-full flex-col md:relative md:h-auto md:max-h-[90vh] md:w-[390px] md:overflow-hidden md:rounded-[2.5rem] md:border md:shadow-2xl"
+              className="flex w-full flex-col md:h-full md:overflow-hidden"
               style={{
-                aspectRatio: "390 / 844",
-                backgroundColor: "var(--background)",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <div
                 className="md:scrollbar-hide flex min-h-0 flex-1 flex-col overflow-y-auto pb-17 md:pb-0"
                 style={{
                   backgroundColor: "var(--background)",
+                  flex: "1 1 0%",
+                  minHeight: 0,
+                  overflowY: "auto",
                 }}
               >
                 {children}
               </div>
               <BottomNav />
             </div>
-          </div>
+          </MobileMockupWrapper>
         </ThemeProvider>
       </body>
     </html>
