@@ -267,7 +267,7 @@ export default function AddPage() {
         )}
 
         {/* Custom Food Button */}
-        <div className="border-border/30 dark:border-border/20 sticky right-0 bottom-0 left-0 z-10 -mx-4 border-t bg-transparent px-4 pt-4 pb-4 backdrop-blur-xs">
+        <div className="border-border/30 dark:border-border/20 sticky right-0 bottom-0 left-0 z-10 -mx-4 -mt-4 border-t bg-transparent p-4 backdrop-blur-xs">
           <Button
             onClick={() => {
               const url = dateParam
