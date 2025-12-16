@@ -17,7 +17,11 @@ export function BottomNav() {
   return (
     <nav className="bg-card border-border fixed right-0 bottom-0 left-0 mx-auto flex w-full max-w-md items-center justify-around border-t py-3 md:relative md:mx-0 md:mt-auto md:max-w-full md:shrink-0">
       {navItems.map(({ href, label, icon: Icon }) => {
-        const isActive = pathname === href;
+        // For home route, only match exactly. For other routes, match if pathname starts with the href
+        const isActive =
+          href === "/"
+            ? pathname === href
+            : pathname === href || pathname.startsWith(href + "/");
         return (
           <Link
             key={href}
