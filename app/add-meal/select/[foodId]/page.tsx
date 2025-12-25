@@ -19,6 +19,27 @@ const MEAL_TYPES: { value: MealTime; label: string; emoji: string }[] = [
 
 const SERVING_SIZES: ServingSize[] = ["1/4", "1/3", "1/2", "2/3", "3/4", "1"];
 
+/**
+ * Determines the meal time based on the current hour of the day
+ * - 4 AM - 12 PM: Breakfast
+ * - 12 PM - 5 PM: Lunch
+ * - 5 PM - 10 PM: Dinner
+ * - 10 PM - 4 AM: Snack
+ */
+function getMealTimeFromHour(): MealTime {
+  const hour = new Date().getHours();
+
+  if (hour >= 4 && hour < 12) {
+    return "breakfast";
+  } else if (hour >= 12 && hour < 17) {
+    return "lunch";
+  } else if (hour >= 17 && hour < 22) {
+    return "dinner";
+  } else {
+    return "snack";
+  }
+}
+
 export default function SelectMealPage() {
   const router = useRouter();
   const params = useParams();
@@ -29,7 +50,7 @@ export default function SelectMealPage() {
   const [food, setFood] = useState<Food | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMealTime, setSelectedMealTime] = useState<MealTime | null>(
-    null,
+    getMealTimeFromHour(),
   );
   const [selectedServingSize, setSelectedServingSize] =
     useState<ServingSize>("1");
