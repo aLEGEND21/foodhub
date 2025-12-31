@@ -1,0 +1,38 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            cd ~/FoodHub
+
+            echo "🚀 Starting deployment..."
+
+            # Run deployment script and capture exit code
+            if bash scripts/deploy.sh; then
+              echo "✅ Deployment completed successfully"
+            else
+              echo "❌ Deployment failed, initiating rollback..."
+              if bash scripts/rollback.sh; then
+                echo "✅ Rollback completed successfully"
+              else
+                echo "❌ Rollback also failed - manual intervention required"
+                exit 1
+              fi
+            fi
