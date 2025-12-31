@@ -1,3 +1,6 @@
+// Import types for use in this file
+import type { Meal } from "./meal";
+
 // Re-export all types for convenience
 export type { Food } from "./food";
 export type { Meal } from "./meal";
