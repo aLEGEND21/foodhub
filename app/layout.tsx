@@ -8,8 +8,8 @@ import { MobileMockupWrapper } from "@/components/mobile-mockup-wrapper";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FoodHub - Your Food Companion",
-  description: "Track your food intake and improve your health",
+  title: "FoodHub",
+  description: "Track your food intake and habits to improve your health",
 };
 
 export default function RootLayout({
